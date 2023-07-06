@@ -1,38 +1,48 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>聊天通訊</title>
+  <title>線上聊天</title>
   <style>
-    #chatbox {
-      width: 400px;
+    #messages {
       height: 300px;
-      border: 1px solid black;
       overflow-y: scroll;
     }
-
-    #inputbox {
-      width: 400px;
-    }
   </style>
-</head>
-<body>
-  <div id="chatbox"></div>
-  <input type="text" id="inputbox" placeholder="輸入訊息..." />
-  <button onclick="sendMessage()">送出</button>
-
   <script>
-    function sendMessage() {
-      var inputElement = document.getElementById("inputbox");
-      var message = inputElement.value;
+    // 建立 WebSocket 連線
+    const socket = new WebSocket('ws://localhost:8080');
 
-      if (message.trim() !== "") {
-        var chatboxElement = document.getElementById("chatbox");
-        var messageElement = document.createElement("p");
-        messageElement.textContent = message;
-        chatboxElement.appendChild(messageElement);
-        inputElement.value = "";
-      }
+    // 監聽連線建立事件
+    socket.addEventListener('open', function (event) {
+      console.log('已連線至伺服器');
+    });
+
+    // 監聽伺服器傳來的訊息
+    socket.addEventListener('message', function (event) {
+      var message = event.data;
+      showMessage(message);
+    });
+
+    // 將訊息顯示在畫面上
+    function showMessage(message) {
+      var messages = document.getElementById('messages');
+      var messageElem = document.createElement('div');
+      messageElem.textContent = message;
+      messages.appendChild(messageElem);
+    }
+
+    // 從輸入框發送訊息
+    function sendMessage() {
+      var input = document.getElementById('input');
+      var message = input.value;
+      socket.send(message);
+      input.value = '';
     }
   </script>
+</head>
+<body>
+  <div id="messages"></div>
+  <input type="text" id="input" />
+  <button onclick="sendMessage()">發送</button>
 </body>
 </html>
